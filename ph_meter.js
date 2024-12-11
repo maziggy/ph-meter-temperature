@@ -9,7 +9,7 @@ class PhMeterCard extends LitElement {
       config: {},
       _show_slider: {}
     };
-  } 
+  }
 
   constructor() {
       super();
@@ -24,6 +24,21 @@ class PhMeterCard extends LitElement {
     const badge_color = this.config.badge_color ? this.config.badge_color : "rgba(21, 168, 224, 0.2)";
     const color_saturation = this.config.color_saturation  ? this.config.color_saturation  : "100%";
     const stateObj_state = stateObj.state;
+    const lastUpdatedDate = new Date(stateObj.last_changed);
+    const now = new Date();
+    const diffSeconds = Math.floor((now - lastUpdatedDate) / 1000);
+    let lastUpdatedText = '';
+    if (diffSeconds < 60) {
+        lastUpdatedText = `${diffSeconds}s ago`;
+    } else if (diffSeconds < 3600) {
+        lastUpdatedText = `${Math.floor(diffSeconds / 60)}m ago`;
+    } else if (diffSeconds < 86400) {
+        lastUpdatedText = `${Math.floor(diffSeconds / 3600)}h ago`;
+    } else if (diffSeconds < 604800) {
+        lastUpdatedText = `${Math.floor(diffSeconds / 86400)}d ago`;
+    } else {
+        lastUpdatedText = `${Math.floor(diffSeconds / 604800)}w ago`;
+    }
     var ph_state;
     if (stateObj_state < 4) {ph_state = "Very Acid"}
       else if ( stateObj_state >= 4 && stateObj_state < 5 ) {ph_state = "Acid"}
@@ -75,14 +90,14 @@ class PhMeterCard extends LitElement {
         };
     };
 
-  
+
 
     if (this.config.ph_high && show_alert)   {
       const ph_high_alert = this.hass.states[this.config.ph_high].state
       if ( stateObj_state > ph_high_alert && this._show_alert_ph_high == true  && stateObj_state != "unavailable" ) {
             alert("pH of the water is too high. Ph: " + stateObj_state) ;
             this._show_alert_ph_high = false;
-    
+
           };
       if ( stateObj_state < ph_high_alert) {
         this._show_alert_ph_high = true;
@@ -94,7 +109,7 @@ class PhMeterCard extends LitElement {
       if ( stateObj_state > ph_low_alert && this._show_alert_ph_low == true  && stateObj_state != "unavailable" ) {
             alert("pH of the water is too low. Ph: " + stateObj_state) ;
             this._show_alert_ph_low = false;
-    
+
           };
       if ( stateObj_state < ph_low_alert) {
         this._show_alert_ph_low = true;
@@ -117,7 +132,7 @@ class PhMeterCard extends LitElement {
         </div>
           <div class="grid-min-temp" ">${temp_min}</div>
           <div class="grid-max-temp" ">${temp_max}</div>
-        </div>      
+        </div>
       ` : html``}
 <!-- ################################################################ Ph data & alert ############################################################ -->
     <div class="ph-logo-container">
@@ -260,7 +275,7 @@ class PhMeterCard extends LitElement {
 
         ` : html``}
         ${this._show_slider ? html`
-        <div class="ph_name_full" style="width: ${this.config.temp_high || this.config.temp_low || this.config.ph_high || this.config.ph_low ? '80%' : '100%'};">     
+        <div class="ph_name_full" style="width: ${this.config.temp_high || this.config.temp_low || this.config.ph_high || this.config.ph_low ? '80%' : '100%'};">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" auto size viewBox="0 0 648 512">
             <defs>
               <style>
@@ -292,14 +307,17 @@ class PhMeterCard extends LitElement {
           </div>
           ` : html`
       `}
-    </div> 
+    </div>
           ` : html`
           <div class="ph_compact" >
-            <div>${this.config.name ? html`${this.config.name}` : html``} - pH: ${stateObj.state != "unavailable" ? stateObj.state : 'no data '} - 
+            <div>
+              ${this.config.name ? html`${this.config.name}` : html``} - pH: ${stateObj.state != "unavailable" ? stateObj.state : 'no data '} -
               ${this.ph_state  != "unavailable" ? ph_state : ' '}
-            
             </div>
-          </div>
+            <div class="last-updated-text">
+              Last Updated: ${lastUpdatedText}
+            </div>
+            </div>
       `}
     <!-- ################################################################ badge section ############################################################ -->
       ${this.config.ec || this.config.tds || this.config.salinity || this.config.chlorine ? html`
@@ -313,12 +331,12 @@ class PhMeterCard extends LitElement {
             .st9{fill:var(--primary-text-color);}
             .st10{font-size:26px;}
           </style>
-        
-      ${this.config.ec ? html`   
-      
+
+      ${this.config.ec ? html`
+
         <svg CLASS="svg-badge" version="1.1" id="Livello_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
           viewBox="0 0 200 202" style="enable-background:new 0 0 200 202;" xml:space="preserve" @click=${() => this._moreinfo(this.config.ec)}>
-        
+
         <path class="st0" d="M174,198H25c-11.05,0-20-8.95-20-20V54c0-11.05,8.95-20,20-20h149c11.05,0,20,8.95,20,20v124
           C194,189.05,185.05,198,174,198z"/>
         <g class="st1">
@@ -382,10 +400,10 @@ class PhMeterCard extends LitElement {
               <stop  offset="0" style="stop-color:#F6AF45"/>
               <stop  offset="0.2532" style="stop-color:#F5A641"/>
               <stop  offset="0.6727" style="stop-color:#F38C37"/>
-              <stop  offset="1" style="stop-color:#F1742D"/>    
+              <stop  offset="1" style="stop-color:#F1742D"/>
           </linearGradient>
           <circle style="fill:url(#SVGID_00000145026068835452480210000014733037783391163788_);" cx="56.69" cy="42.26" r="35.42"/>
-          <text transform="matrix(1 0 0 1 21.5351 137.1265)" class="st9 st7 st8">Tds:</text>
+          <text transform="matrix(1 0 0 1 21.5351 137.1265)" class="st9 st7 st8">Tds 700:</text>
           <text transform="matrix(1 0 0 1 49.2139 174.4214)" class="st9 st7 st8">${this.hass.states[this.config.tds].state} ppm</text>
           <text transform="matrix(1 0 0 1 30.8479 52.8279)" class="st6 st7 st10">TDS</text>
         </svg>
@@ -442,7 +460,7 @@ class PhMeterCard extends LitElement {
       ${this.config.chlorine ? html`
       <svg CLASS="svg-badge" version="1.1" id="Livello_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
           viewBox="0 0 200 202" style="enable-background:new 0 0 200 202;" xml:space="preserve" @click=${() => this._moreinfo(this.config.chlorine)}>
-        
+
         <path class="st0" d="M174,198H25c-11.05,0-20-8.95-20-20V54c0-11.05,8.95-20,20-20h149c11.05,0,20,8.95,20,20v124
           C194,189.05,185.05,198,174,198z"/>
         <g class="st1">
@@ -477,7 +495,7 @@ class PhMeterCard extends LitElement {
         <text transform="matrix(1 0 0 1 40.3924 52.8279)" class="st6 st7 st10">CL</text>
         </svg>
         ` : html``}
-      </div> 
+      </div>
     ` : html``}
 
 
@@ -496,21 +514,21 @@ class PhMeterCard extends LitElement {
 
 
     <!-- ################################################################ pH meter section ############################################################ -->
-    </div> 
+    </div>
       <div  class="phmeter-container" @click=${() => this._moreinfo(this.config.entity)}>
         <div style="background-color: #a50d00; grid-column: 1 / 2; border-radius: 5px 0px 0px 5px;" class="grid-item item-row">1</div>
         <div style="background-color: #f65922; grid-column: 2 / 3;" class="grid-item item-row">2</div>
-        <div style="background-color: #fbb90d; grid-column: 3 / 4;" class="grid-item item-row">3</div>  
+        <div style="background-color: #fbb90d; grid-column: 3 / 4;" class="grid-item item-row">3</div>
         <div style="background-color: #fff301; grid-column: 4 / 5;" class="grid-item item-row">4</div>
         <div style="background-color: #cfe901; grid-column: 5 / 6;" class="grid-item item-row">5</div>
-        <div style="background-color: #87d800; grid-column: 6 / 7;" class="grid-item item-row">6</div>  
+        <div style="background-color: #87d800; grid-column: 6 / 7;" class="grid-item item-row">6</div>
         <div style="background-color: #00ab01; grid-column: 7 / 8;" class="grid-item item-row">7</div>
         <div style="background-color: #00bb64; grid-column: 8 / 9;" class="grid-item item-row">8</div>
-        <div style="background-color: #01ced1; grid-column: 9 / 10;" class="grid-item item-row">9</div>  
-        <div style="background-color: #0094da; grid-column: 10 / 11;" class="grid-item item-row">10</div> 
-        <div style="background-color: #0157e8; grid-column: 11 / 12;" class="grid-item item-row">11</div> 
-        <div style="background-color: #2344df; grid-column: 12 / 13;" class="grid-item item-row">12</div> 
-        <div style="background-color: #5834dc; grid-column: 13 / 14;" class="grid-item item-row">13</div> 
+        <div style="background-color: #01ced1; grid-column: 9 / 10;" class="grid-item item-row">9</div>
+        <div style="background-color: #0094da; grid-column: 10 / 11;" class="grid-item item-row">10</div>
+        <div style="background-color: #0157e8; grid-column: 11 / 12;" class="grid-item item-row">11</div>
+        <div style="background-color: #2344df; grid-column: 12 / 13;" class="grid-item item-row">12</div>
+        <div style="background-color: #5834dc; grid-column: 13 / 14;" class="grid-item item-row">13</div>
         <div style="background-color: #4224aa; grid-column: 14 / 15; border-radius: 0px 5px 5px 0px;" class="grid-item item-row">14</div>
         <div class="ph-cursor" style="width: ${(stateObj.state * 6.66) - 2}%;">|</div>
         <div class="ph-cursor-space"></div>
@@ -552,7 +570,7 @@ class PhMeterCard extends LitElement {
         value: value
     });
   }
-  
+
   myFunction(phvalue) {
     alert("il ph ha superato la soglia di alert. con valore: " + phvalue);
   }
@@ -564,13 +582,14 @@ class PhMeterCard extends LitElement {
   }
 
 
-    
+
 
 
   static get styles() {
     return css`
-
-    :host{background:var(--ha-card-background, var(--card-background-color, white) );border-radius:var(--ha-card-border-radius, 4px);box-shadow:var(--ha-card-box-shadow, 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12) );color:var(--primary-text-color);display:block;transition:all .3s ease-out 0s;position:relative;padding-top:10px;filter:saturate(var(--color_saturation))}.flex-container-badge{display:flex;margin:10px}.svg-badge{max-width:33%;max-height:33%}.phmeter-container{display:grid;grid-template-columns:repeat(14,1fr);padding:10px}.temperature-container{display:grid;grid-template-columns:50px auto 100px auto 50px;grid-template-rows:30px auto}.ph-state-text{display:grid;grid-template-columns:70px auto 80px auto 70px;grid-template-rows:30px;padding:0 10px}.grid-max-temp,.grid-min-temp{//background-color:rgba(255,255,255,.8);//border:1px solid rgba(255,255,255,.8);grid-row:2/3;font-size:.9em;text-align:center;align-self:center;color:rgba(255,255,255,.7);font-weight:700}.grid-min-temp{grid-column:1/2}.grid-max-temp{grid-column:5/6}.grid-item,.grid-item-temp{background-color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.8);font-size:1.2em;text-align:center;color:#fff;font-weight:700}.grid-item-temp{grid-column:1/15;grid-row:1/2;padding:20px 0}.grid-item{padding-top:150%;padding-bottom:20%}.grid-item-text-box,.ph_compact{color:var(--primary-text-color)}.grid-item-text-box{//background-color:rgba(255,255,255,.8);//border:1px solid rgba(255,255,255,.8);font-size:.8em;text-align:center;font-weight:700}.ph-logo-container{border-left:1px solid #15a8e0;border-bottom:1px solid #15a8e0;border-radius:30px;margin:20px 10px 5px}.ph-logo-container-logo{display:flex;margin-bottom:10px}.ph-logo-alert{display:flex;flex-direction:column;margin:20px 20px 0 12px;text-align:center;border-top:1px solid #15a8e0;border-radius:10px}.slider-alert{display:grid;grid-template-columns:10% 90%;padding:40px 20px 0 12px}.slider-alert>div{align-self:center;margin-left:5px}.slider-alert>div>input{width:85%}.ph_compact{margin:20px 10px 0;padding:10px 0 5px;font-size:1.2em;text-align:left}.item-temp,.ph-cursor{grid-row:1/2;text-align:right;padding-top:8px;color:#fff;text-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5)}.ph-cursor{grid-column:1/15;background-color:transparent;font-size:2.9em}.item-temp{font-size:2.5em}.item-c-1,.item-temp,.ph-cursor-space{grid-column:1/15;background-color:transparent}.ph-cursor-space{grid-row:1/2;border-radius:5px;box-shadow:5px 5px 7px inset rgba(0,0,0,.5),-5px -5px 7px inset rgba(0,0,0,.5)}.item-row{grid-row:1/2}.temp-box-gradient{grid-column:1/6;grid-row:2/3;display:flex;flex-flow:row wrap;border-radius:5px;padding:0;margin:0 10px;list-style:none;box-shadow:5px 5px 7px inset rgba(0,0,0,.5),-5px -5px 7px inset rgba(0,0,0,.5)}.temp-vale-box{background:0 0;border:solid 3px #fff;border-radius:10px;padding:3px;width:30px;height:20px;line-height:20px;color:#fff;font-weight:700;font-size:.9em;text-align:center;margin:7px 0;box-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5),-1px 2px 4px inset rgba(0,0,0,.5),1px 1px 3px inset rgba(0,0,0,.5);text-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5)}.svg{grid-column:1/5;grid-row:1/5;padding:10% 40% 10% 10%}.ph_state{grid-column:3/4;grid-row:3/4;font-size:150%;color:#15a8e0;text-align:left}.svg-ph-state{grid-column:2/4;grid-row:2/3;width:100%;height:auto}.ph-value-text{transform:translate(8px,123px);font-size:162px;fill:#15a8e0}.name{grid-column:1/5;grid-row:4/5;color:#15a8e0;font-size:1.5em;align-self:flex-end;text-align:right;margin-right:7%}.alert_back{display:flex;padding:3px;width:100%}.slider_value{font-size:25px;padding:8px;width:10%}.slider{align-self:center;width:90%}.slider_box{display:flex}.ph_name_full{display:flex;flex-flow:column;justify-content:space-between;color:#15a8e0}
+      :host{background:var(--ha-card-background, var(--card-background-color, white) );border-radius:var(--ha-card-border-radius, 4px);box-shadow:var(--ha-card-box-shadow, 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12) );color:var(--primary-text-color);display:block;transition:all .3s ease-out 0s;position:relative;padding-top:10px;filter:saturate(var(--color_saturation))}.flex-container-badge{display:flex;margin:10px}.svg-badge{max-width:33%;max-height:33%}.phmeter-container{display:grid;grid-template-columns:repeat(14,1fr);padding:10px}.temperature-container{display:grid;grid-template-columns:50px auto 100px auto 50px;grid-template-rows:30px auto}.ph-state-text{display:grid;grid-template-columns:70px auto 80px auto 70px;grid-template-rows:30px;padding:0 10px}.grid-max-temp,.grid-min-temp{//background-color:rgba(255,255,255,.8);//border:1px solid rgba(255,255,255,.8);grid-row:2/3;font-size:.9em;text-align:center;align-self:center;color:rgba(255,255,255,.7);font-weight:700}.grid-min-temp{grid-column:1/2}.grid-max-temp{grid-column:5/6}.grid-item,.grid-item-temp{background-color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.8);font-size:1.2em;text-align:center;color:#fff;font-weight:700}.grid-item-temp{grid-column:1/15;grid-row:1/2;padding:20px 0}.grid-item{padding-top:150%;padding-bottom:20%}.grid-item-text-box,.ph_compact{color:var(--primary-text-color)}.grid-item-text-box{//background-color:rgba(255,255,255,.8);//border:1px solid rgba(255,255,255,.8);font-size:.8em;text-align:center;font-weight:700}.ph-logo-container{border-left:1px solid #15a8e0;border-bottom:1px solid #15a8e0;border-radius:30px;margin:20px 10px 5px}.ph-logo-container-logo{display:flex;margin-bottom:10px}.ph-logo-alert{display:flex;flex-direction:column;margin:20px 20px 0 12px;text-align:center;border-top:1px solid #15a8e0;border-radius:10px}.slider-alert{display:grid;grid-template-columns:10% 90%;padding:40px 20px 0 12px}.slider-alert>div{align-self:center;margin-left:5px}.slider-alert>div>input{width:85%}.ph_compact{margin:20px 10px 0;padding:10px 0 5px;font-size:1.2em;text-align:left}.item-temp,.ph-cursor{grid-row:1/2;text-align:right;padding-top:8px;color:#fff;text-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5)}.ph-cursor{grid-column:1/15;background-color:transparent;font-size:2.9em}.item-temp{font-size:2.5em}.item-c-1,.item-temp,.ph-cursor-space{grid-column:1/15;background-color:transparent}.ph-cursor-space{grid-row:1/2;border-radius:5px;box-shadow:5px 5px 7px inset rgba(0,0,0,.5),-5px -5px 7px inset rgba(0,0,0,.5)}.item-row{grid-row:1/2}.temp-box-gradient{grid-column:1/6;grid-row:2/3;display:flex;flex-flow:row wrap;border-radius:5px;padding:0;margin:0 10px;list-style:none;box-shadow:5px 5px 7px inset rgba(0,0,0,.5),-5px -5px 7px inset rgba(0,0,0,.5)}.temp-vale-box{background:0 0;border:solid 3px #fff;border-radius:10px;padding:3px;width:30px;height:20px;line-height:20px;color:#fff;font-weight:700;font-size:.9em;text-align:center;margin:7px 0;box-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5),-1px 2px 4px inset rgba(0,0,0,.5),1px 1px 3px inset rgba(0,0,0,.5);text-shadow:-1px 2px 4px rgba(0,0,0,.5),1px 1px 3px rgba(0,0,0,.5)}.svg{grid-column:1/5;grid-row:1/5;padding:10% 40% 10% 10%}.ph_state{grid-column:3/4;grid-row:3/4;font-size:150%;color:#15a8e0;text-align:left}.svg-ph-state{grid-column:2/4;grid-row:2/3;width:100%;height:auto}.ph-value-text{transform:translate(8px,123px);font-size:162px;fill:#15a8e0}.name{grid-column:1/5;grid-row:4/5;color:#15a8e0;font-size:1.5em;align-self:flex-end;text-align:right;margin-right:7%}.alert_back{display:flex;padding:3px;width:100%}.slider_value{font-size:25px;padding:8px;width:10%}.slider{align-self:center;width:90%}.slider_box{display:flex}.ph_name_full{display:flex;flex-flow:column;justify-content:space-between;color:#15a8e0}
+      .last-updated-text {font-size: 0.7em; color: var(--secondary-text-color, gray); margin-top: -20px; text-align: right; padding-right: 10px;}
+      .ph_compact {margin: 20px 10px 0; padding: 10px 0 5px; font-size: 1.2em; text-align: left;}
     `;
   }
 }
