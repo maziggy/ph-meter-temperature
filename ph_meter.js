@@ -24,20 +24,31 @@ class PhMeterCard extends LitElement {
     const badge_color = this.config.badge_color ? this.config.badge_color : "rgba(21, 168, 224, 0.2)";
     const color_saturation = this.config.color_saturation  ? this.config.color_saturation  : "100%";
     const stateObj_state = stateObj.state;
-    const lastUpdatedDate = new Date(stateObj.last_changed);
+    const entities = [
+      this.config.entity,
+      this.config.temperature,
+      this.config.ec
+    ].filter(Boolean);
     const now = new Date();
-    const diffSeconds = Math.floor((now - lastUpdatedDate) / 1000);
+    const latestEntityState = entities
+      .map(entity => this.hass.states[entity])
+      .filter(stateObj => stateObj)
+      .reduce((latest, stateObj) => {
+        const stateChangedDate = new Date(stateObj.last_changed);
+        return stateChangedDate > latest ? stateChangedDate : latest;
+      }, new Date(0));
+    const diffSeconds = Math.floor((now - latestEntityState) / 1000);
     let lastUpdatedText = '';
     if (diffSeconds < 60) {
-        lastUpdatedText = `${diffSeconds}s ago`;
+      lastUpdatedText = `${diffSeconds}s ago`;
     } else if (diffSeconds < 3600) {
-        lastUpdatedText = `${Math.floor(diffSeconds / 60)}m ago`;
+      lastUpdatedText = `${Math.floor(diffSeconds / 60)}m ago`;
     } else if (diffSeconds < 86400) {
-        lastUpdatedText = `${Math.floor(diffSeconds / 3600)}h ago`;
+      lastUpdatedText = `${Math.floor(diffSeconds / 3600)}h ago`;
     } else if (diffSeconds < 604800) {
-        lastUpdatedText = `${Math.floor(diffSeconds / 86400)}d ago`;
+      lastUpdatedText = `${Math.floor(diffSeconds / 86400)}d ago`;
     } else {
-        lastUpdatedText = `${Math.floor(diffSeconds / 604800)}w ago`;
+      lastUpdatedText = `${Math.floor(diffSeconds / 604800)}w ago`;
     }
     var ph_state;
     if (stateObj_state < 4) {ph_state = "Very Acid"}
