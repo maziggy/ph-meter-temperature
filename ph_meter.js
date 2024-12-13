@@ -39,7 +39,12 @@ class PhMeterCard extends LitElement {
       }, new Date(0));
     const diffSeconds = Math.floor((now - latestEntityState) / 1000);
     let lastUpdatedText = '';
-    if (diffSeconds < 60) {
+    if (diffSeconds < 0) {
+      diffSeconds = 0
+    }
+    if (diffSeconds <= 5) {
+      lastUpdatedText = `now`;
+    } else if (diffSeconds < 60) {
       lastUpdatedText = `${diffSeconds}s ago`;
     } else if (diffSeconds < 3600) {
       lastUpdatedText = `${Math.floor(diffSeconds / 60)}m ago`;
